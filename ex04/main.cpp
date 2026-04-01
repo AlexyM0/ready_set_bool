@@ -8,16 +8,17 @@
 
 static std::vector<char> get_vars(const std::string &f)
 {
-    std::vector<char> vars;
+    std::set<char> unique_vars;
 
     for (char c : f)
     {
         if (c >= 'A' && c <= 'Z')
         {
-             vars.push_back(c);
+             unique_vars.insert(c);
         }
     }
-    return vars;
+    
+    return std::vector<char>(unique_vars.begin(), unique_vars.end());
 }
 
 static bool eval(const std::string &f, std::map<char, bool> &v)
@@ -88,5 +89,12 @@ void print_truth_table(const std::string &formula)
 }
 int main()
 {
-    print_truth_table("AB&C|");
+    try
+    {
+        print_truth_table("AB&C|");
+    }
+    catch(const char *msg)
+    {
+        std::cout << "Error: " << msg << std::endl;
+    }
 }
