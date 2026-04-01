@@ -63,6 +63,7 @@ void print_truth_table(const std::string &formula)
     int n = vars.size();
     int rows = 1 << n;
 
+    std::cout << " ";
     for (char v : vars)
         std::cout << v << " | ";
     std::cout << "= |\n";
@@ -73,6 +74,7 @@ void print_truth_table(const std::string &formula)
 
     for (int i = 0; i < rows; i++)
     {
+        std::cout << " ";
         std::map<char, bool> vmap;
         for (int j = 0; j < n; j++)
         {
