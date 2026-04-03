@@ -100,7 +100,6 @@ std::string negation_normal_form(const std::string& formula)
                 st.pop();
             std::string a = st.top();
                 st.pop();
-            // A B =  =>  A B & !A !B & |
             std::string term1 = a + b + "&";
             std::string term2 = negate_rpn_iterative(a) + negate_rpn_iterative(b) + "&";
             st.push(term1 + term2 + "|");
@@ -108,22 +107,73 @@ std::string negation_normal_form(const std::string& formula)
     }
 
     if (st.empty())
-        throw std::runtime_error("invalid formula: leftover values");
+        throw std::runtime_error("invalid formula");
     return st.top();
 }
 
-int main() 
+std::string distribute(std::string s)
+{
+    if (s.size() == 1)
+        return s;
+
+    char op = s.back();
+
+    if (op == '|' || op == '&')
+    {
+        std::string lhs, rhs;
+        split_rpn(s, lhs, rhs);
+
+        lhs = distribute(lhs);
+        rhs = distribute(rhs);
+
+        // cas important
+        if (op == '|')
+        {
+            // A | (B & C)
+            if (rhs.back() == '&')
+            {
+                std::string b, c;
+                split_rpn(rhs, b, c);
+                return distribute(lhs + b + "|") +  distribute(lhs + c + "|") + "&";
+            }
+
+            // (A & B) | C
+            if (lhs.back() == '&')
+            {
+                std::string a, b;
+                split_rpn(lhs, a, b);
+                return distribute(a + rhs + "|") +  distribute(b + rhs + "|") + "&";
+            }
+        }
+
+        return lhs + rhs + op;
+    }
+
+    return s;
+}
+
+std::string conjunctive_normal_form(const std::string& formula)
+{
+    std::string nnf = negation_normal_form(formula);
+    return distribute(nnf);
+}
+
+int main()
 {
     try
     {
-        std::cout << "AB&!    -> " << negation_normal_form("AB&!") << std::endl;
-        std::cout << "AB|!    -> " << negation_normal_form("AB|!") << std::endl;
-        std::cout << "AB>     -> " << negation_normal_form("AB>") << std::endl;
-        std::cout << "AB=     -> " << negation_normal_form("AB=") << std::endl;
-        std::cout << "AB|C&!  -> " << negation_normal_form("AB|C&!") << std::endl;
+        std::cout << conjunctive_normal_form("AB&!") << std::endl;
+        std::cout << conjunctive_normal_form("AB|!") << std::endl;
+        std::cout << conjunctive_normal_form("AB|C&") << std::endl;
+        std::cout << conjunctive_normal_form("AB|C|D|") << std::endl;
+        std::cout << conjunctive_normal_form("AB&C&D&") << std::endl;
+        std::cout << conjunctive_normal_form("AB&!C!|") << std::endl;
+        std::cout << conjunctive_normal_form("AB|!C!&") << std::endl;
     }
     catch(const char *msg)
     {
         std::cout << "Error: " << msg << std::endl;
     }
+  
+    return 0;
 }
